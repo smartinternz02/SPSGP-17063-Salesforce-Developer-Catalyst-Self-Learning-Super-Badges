@@ -1,0 +1,690 @@
+Apex Triggers -
+1) Create an Apex Trigger -
+
+1 trigger AccountAddressTrigger on Account (before insert, before
+update) {
+2
+3 for(Account a : Trigger.new){
+4 If (a.Match_Billing_Address__c == true) {
+5 a.ShippingPostalCode = a.BillingPostalCode;
+6 }
+7 }
+8
+9 }
+10
+
+2) Bulk Apex Triggers -
+
+1 trigger ClosedOpportunityTrigger on Opportunity (after
+insert, after update) {
+2
+3 List<Task> taskList = new List <task>();
+4
+5 for(Opportunity opp : Trigger.New){
+6 if(opp.StageName == 'Closed Won'){
+7 taskList.add(new Task(Subject = 'Follow Up Test
+8 }
+9 }
+10 if(taskList.size()>0){
+11 insert taskList;
+12 }
+13 }
+
+
+
+
+
+
+
+Apex Triggers -
+
+3)Get Started with Apex Unit Test -
+
+1
+2 @isTest
+3 public class TestVerifyDate {
+4
+5 @isTest static void test1(){
+6 Date d =
+VerifyDate.CheckDates(Date.parse('01/01/2020'),Date
+.parse('01/003/2020'));
+7
+System.assertEquals(Date.parse('01/03/2020'), d);
+8 }
+9
+10 @isTest static void test2(){
+11 Date d =
+VerifyDate.checkDates(Date.parse('01/01/2020'),Date
+.parse('03/03/2020'));
+12
+System.assertEquals(Date.parse('01/31/2020'), d);
+13 }
+14}
+
+
+
+
+
+
+
+
+
+
+
+
+
+4) Test Apex Triggers -
+
+1 @isTest
+2 public class TestRestrictContactByName {
+3
+4 @isTest
+5 public static void testContact(){
+6 Contact ct = new Contact();
+7 ct.LastName = 'INVALIDNAME';
+8 Database.SaveResult res =
+Database.insert(ct,false);
+9 System.assertEquals('The Lasr Name
+
+10 }
+11
+12 }
+
+
+
+
+
+
+
+5) Create Test Data For Apex Test -
+
+1 public class RandomContactFactory {
+2
+3 public static List<Contact>
+generateRandomContacts(Integer num, String
+lastName){
+4 List<Contact> contactList = new
+List<Contact>();
+5 for(Integer i = 1;i<=num;i++){
+6 Contact ct = new
+Contact(FirstName = 'Test '+i, LastName
+=lastName);
+7 contactList.add(ct);
+8
+9 }
+10 return contactList;
+11 }
+12
+13 }
+
+
+2) Animal Locator Mock Test:
+
+1 @isTest
+2 global class AnimalLocatorMock implements
+HttpCalloutMock {
+3 global HTTPResponse respond(HTTPRequest
+request) {
+4 HttpResponse response = new HttpResponse();
+5 response.setHeader('Content-type'
+,
+
+'application/json');
+6 response.setBody('{"animal": {"id":1,
+7 response.setStatusCode(200);
+8 return response;
+9 }
+10
+11
+12}
+
+
+
+3) Animal Locator Test:
+
+1 @isTest
+2 private class AnimalLocatorTest {
+3 @isTest static void AnimalLocatorMock1() {
+4 Test.SetMock(HttpCallOutMock.class, new
+AnimalLocatorMock());
+5 string result =
+AnimalLocator.getAnimalNameById(3);
+6 string expectedresult = 'cow';
+7 System.assertEquals(result,
+expectedResult);
+8 }
+9
+10}
+
+
+
+Apex Class Park Locator Test:
+1) Apex Class Park Locator :
+
+1 public class ParkLocator {
+2 public static string[] country(String country)
+{
+3 parkService.parksImplPort park = new
+parkService.parksImplPort();
+4 return park.byCountry(country);
+5 }
+6 }
+
+
+2) Apex Class For Park Locator Test :
+
+1 @isTest
+2 private class ParkLocatorTest {
+3 @isTest static void testCallout() {
+4 // This causes a fake response to be
+generated
+5 Test.setMock(WebServiceMock.class, new
+ParkServiceMock());
+6 // Call the method that invokes a callout
+7 //Double x = 1.0;
+8 //Double result = AwesomeCalculator.add(x,
+y);
+9
+10 String country = 'Germany';
+11 String[] result =
+ParkLocator.Country(country);
+12
+13
+14 // Verify that a fake result is returned
+15 System.assertEquals(new
+List<String>{'Hamburg Wadden Sea National Park'
+,
+
+'Hainich National Park'
+,
+'Bavarian Forest National
+
+16 }
+17}
+
+
+2) Apex Class For Park Locator MockTest :
+
+1 @isTest
+2 global class ParkServiceMock implements WebServiceMock {
+3 global void doInvoke(
+4 Object stub,
+5 Object request,
+6 Map<String, Object> response,
+7 String endpoint,
+8 String soapAction,
+9 String requestName,
+10 String responseNS,
+11 String responseName,
+12 String responseType) {
+13 // start - specify the response you want to send
+14 parkService.byCountryResponse response_x = new
+parkService.byCountryResponse();
+15 response_x.return_x = new List<String>{'Hamburg
+'Bavarian Forest National Park'};
+16
+17 //calculatorServices.doAddResponse response_x = new
+calculatorServices.doAddResponse();
+18 //response_x.return_x = 3.0;
+19 // end
+20 response.put('response_x'
+
+, response_x);
+
+21 }
+22}
+
+
+Apex Web Services :
+1) Apex Class Account Manager :
+1
+2 @RestResource(urlMapping='/Accounts/*/contacts')
+3 global with sharing class AccountManager {
+4
+5
+6 @HttpGet
+7 global static account getAccount() {
+8
+9 RestRequest request = RestContext.request;
+10
+11 String accountId =
+request.requestURI.substring(request.requestURI.las
+12 request.requestURI.lastIndexOf('/'));
+13 List<Account> a = [select id, name, (select
+id, name from contacts) from account where id =
+:accountId];
+14 List<contact> co = [select id, name from
+contact where account.id = :accountId];
+15 system.debug('** a[0]= '+ a[0]);
+16 return a[0];
+17
+18 }
+19
+20}
+
+
+
+2) Apex Class Account Manager Test :
+
+1 @istest
+2 public class AccountManagerTest {
+3 @istest static void testGetContactsByAccountId() {
+4 Id recordId = createTestRecord();
+5 // Set up a test request
+6 RestRequest request = new RestRequest();
+7 request.requestUri =
+8 'https://yourInstance.salesforce.com/services/apexrest/Accounts/
+9 request.httpMethod = 'GET';
+10 RestContext.request = request;
+11
+12 Account thisAccount = AccountManager.getAccount();
+13 System.assert(thisAccount!= null);
+14 System.assertEquals('Test record', thisAccount.Name);
+15 }
+16
+17 // Helper method
+18 static Id createTestRecord() {
+19
+20 // Create test record
+21 Account accountTest = new Account(
+22 Name='Test record');
+23 insert accountTest;
+24 Contact contactTest = new Contact(
+25 FirstName='John',
+26 LastName='Doe',
+27 AccountId=accountTest.Id
+28 );
+29 return accountTest.Id;
+30 }
+31 }
+
+● Visual Force :
+1) Display Image :
+
+1 <apex:page showHeader="false">
+2 <apex:image
+
+url="https://developer.salesforce.com/files/salesforce-developer-
+3 </apex:page>
+
+2) Display User Info :
+
+1 <apex:page >
+2 {! $User.FirstName}
+3 </apex:page>
+
+3) Contact View :
+
+1 <apex:page standardController="Contact">
+2 <apex:pageBlockSection>
+3 First Name : {! Contact.FirstName}
+4 Last Name: {! Contact.LastName}
+5 Owner Email : {! Contact.Owner.Email}
+6 </apex:pageBlockSection>
+7 </apex:page>
+
+
+4) Opp View :
+
+1 <apex:page standardController="Opportunity">
+2 <apex:outputField value ="{! Opportunity.Name}"/>
+3 <apex:outputField value ="{! Opportunity.Amount}"/>
+4 <apex:outputField value ="{! Opportunity.CloseDate}"/>
+5 <apex:outputField value ="{! Opportunity.Account.Name}"/>
+6 </apex:page>
+
+5) Create Contact :
+
+1 <apex:page standardController="Contact">
+2 <apex:form>
+3 <apex:pageBlockSection>
+4 <apex:inputField value ="{! Contact.FirstName}"/>
+5 <apex:inputField value ="{! Contact.LastName}"/>
+6 <apex:inputField value ="{! Contact.Email}"/>
+7 </apex:pageBlockSection>
+8 <apex:commandButton action="{! save}" value
+="Save"/>
+9 </apex:form>
+10 </apex:page>
+
+
+6) Account List :
+
+1
+2 <apex:page standardController="Account" recordSetVar="accounts">
+3 <apex:form>
+4 <apex:pageBlock>
+5 <apex:repeat value="{!Accounts}" id="acccount_list"
+rendered="true" var="a">
+6
+7 <li>
+8 <apex:outputLink value="/{!a.id}"/>
+9 <apex:outputText value="{!a.name}"/>
+10
+11 </li>
+12
+13
+14 </apex:repeat>
+15
+16
+17 </apex:pageBlock>
+18
+19
+20 </apex:form>
+21 </apex:page>
+
+
+
+7) Show Image :
+
+1 <apex:page >
+2 <apex:image url="{! URLFOR($Resource.vfimagetest,
+3 </apex:page>
+
+
+
+
+8) New case List Controller Apex Class :
+
+1 public class NewCaseListController {
+2 public List<Case> getNewCases(){
+3 List<Case> filterList = [Select ID, CaseNumber from Case
+where status ='New'];
+4 return filterList;
+5 }
+6 }
+
+9) New Case List Visual Force Page :
+
+1 <apex:page controller="NewCaseListController">
+2 <apex:repeat var="case" value="{!newCases}">
+3 <apex:outputLink value="/{!case.ID}">
+4 <apex:outputText
+value="{!case.CaseNumber}"></apex:outputText>
+5 </apex:outputLink>
+6 </apex:repeat>
+7 </apex:page>
+
+10) Contact Form :
+
+1 <apex:page >
+2 Hello
+3 </apex:page>
+
+
+11) Contact Form :
+
+1 <apex:page standardController="Contact">
+2
+3 <head>
+4 <meta charset="utf-8" />
+
+5 <meta name="viewport" content="width=device-width, initial-
+6 <title>Quick Start: Visualforce</title>
+
+7 <!-- Import the Design System style sheet -->
+8 <apex:slds />
+9
+10 </head>
+11 <body>
+12
+13 <apex:form>
+14 <apex:pageBlock title="New Contact">
+15 <!--Buttons -->
+16 <apex:pageBlockButtons>
+17 <apex:commandButton action="{!save}" value="Save"/>
+18 </apex:pageBlockButtons>
+19 <!--Input form -->
+20 <apex:pageBlockSection columns="1">
+21 <apex:inputField value="{!Contact.Firstname}"/>
+22 <apex:inputField value="{!Contact.Lastname}"/>
+23 <apex:inputField value="{!Contact.Email}"/>
+24 </apex:pageBlockSection>
+25 </apex:pageBlock>
+26 </apex:form>
+27
+28 </body>
+29
+30 </apex:page>
+
+
+Asynchronous Methods :
+
+1) Account Processor Apex Class :
+
+1 public class AccountProcessor {
+2
+3 @future
+4 public static void countContacts(List<Id>
+accountIds){
+5
+6 List<Account> accList = [Select Id,
+Number_Of_Contacts__c, (Select Id from Contacts)
+from Account where Id in :accountIds];
+7
+8 for(Account acc : accList){
+9
+10 acc.Number_Of_Contacts__c =
+acc.Contacts.size();
+11 }
+12
+13 update accList;
+14 }
+15}
+
+
+
+2)Account Processor Apex Class Test :
+
+1 @isTest
+2 public class AccountProcessorTest {
+3
+4 public static testmethod void testAccountProcessor(){
+5
+6 account a = new Account();
+7 a.Name = 'Test Account';
+8 insert a;
+9
+10 Contact con = new Contact();
+11 con.FirstName = 'Binary';
+12 con.LastName = 'Programming';
+13 con.AccountId = a.Id;
+14
+15 insert con;
+16
+17 List<Id> accListId = new List<Id>();
+18 accListId.add(a.Id);
+19
+20 Test.startTest();
+21 AccountProcessor.countContacts(accListId);
+22 Test.stopTest();
+23
+24 Account acc = [Select Number_Of_Contacts__c from Account where
+Id =: a.Id];
+25
+System.assertEquals(Integer.valueOf(acc.Number_Of_Contacts__c),1);
+26 }
+27
+28}
+
+
+
+Use Batch Apex :
+
+1) LeadProcessor Apex Class :
+
+1 global class LeadProcessor implements
+Database.Batchable<sObject> {
+2 global Integer count = 0;
+3
+4 global Database.QueryLocator
+start(Database.BatchableContext bc){
+5 return Database.getQueryLocator('SELECT ID,
+6 }
+7
+8 global void execute (Database.BatchableContext bc,
+List<Lead> L_list){
+9 List<lead> L_list_new = new List<lead>();
+10
+11 for(lead L:L_list){
+12 L.leadsource = 'Dreamforce';
+13 L_list_new.add(L);
+14 count += 1;
+15 }
+16 update L_list_new;
+17 }
+18
+19 global void finish(Database.BatchableContext bc){
+20 system.debug('count = ' + count);
+21 }
+22
+23
+24
+25 }
+
+
+
+2) LeadProcessor Apex Class Test :
+@isTest
+public class LeadProcessorTest {
+
+1 @isTest
+2 public static void testit(){
+3 List<lead> L_list = new List<lead>();
+4
+5 for(Integer i=0; i<200; i++){
+6 Lead L = new lead();
+7 L.LastName = 'name' + i;
+8 L.Company = 'Company';
+9 L.Status = 'Random Status';
+10 L_list.add(L);
+11 }
+12 insert L_list;
+13
+14 Test.startTest();
+15 LeadProcessor lp = new LeadProcessor();
+16 Id batchId = Database.executeBatch(lp);
+17 Test.stopTest();
+18 }
+19
+20}
+
+
+
+Control Processes With Queueable Apex :
+1) AddPrimaryContact Apex Class :
+
+1 public class AddPrimaryContact implements Queueable{
+2
+3 private Contact con;
+4 private String state;
+5
+6
+7 public AddPrimaryContact(Contact con, String state){
+8 this.con = con;
+9 this.state=state;
+10
+11 }
+12
+13 public void execute(QueueableContext context){
+14 List<Account> accounts = [Select Id, Name, (Select
+FirstName, LastName, Id from contacts)
+15 from Account where BillingState
+= :state Limit 200];
+16
+17 List<Contact> primaryContacts = new List<Contact>();
+18
+19 for(Account acc:accounts){
+20 Contact c = con.Clone();
+21 c.AccountId = acc.Id;
+22 primaryContacts.add(c);
+23 }
+24
+25 if(primaryContacts.size() > 0){
+26 insert primaryContacts;
+27 }
+28 }
+29 }
+
+
+2) AddPrimaryContact Apex Class Test :
+
+1 @isTest
+2 public class AddPrimaryContactTest {
+3
+4 static testmethod void testQueueable(){
+5 List<Account> testAccounts = new List<Account>();
+6 for(Integer i=0;i<50;i++){
+7 testAccounts.add(new Account(Name='Account
+8 }
+9 for(Integer j=0;j<50;j++){
+10 testAccounts.add(new Account(Name='Account
+11 }
+12 insert testAccounts;
+13
+14 Contact testContact = new Contact(FirstName ='John',
+LastName ='Doe');
+15 insert testContact;
+16
+17 AddPrimaryContact addit = new
+addPrimaryContact(testContact, 'CA');
+18
+19 Test.startTest();
+20 system.enqueueJob(addit);
+21 Test.stopTest();
+22
+23 System.assertEquals(50,[Select count() from contact where
+accountId in (Select Id from Account where BillingState='CA')]);
+24 }
+25
+26 }
+
+
+Schedule Jobs Using The Apex Scheduler :
+1) DailyLeadProcessor Apex Class :
+
+1 global class DailyLeadProcessor implements Schedulable {
+2 global void execute(SchedulableContext ctx) {
+3 List<Lead> lList = [Select Id, LeadSource from Lead where
+LeadSource = null];
+4
+5 if(!lList.isEmpty()) {
+6 for(Lead l: lList) {
+7 l.LeadSource = 'Dreamforce';
+8 }
+9 update lList;
+10 }
+11 }
+12
+13 }
+
+
+
+2) DailyLeadProcessor Apex Class Test :
+
+1 @isTest
+2 public class DailyLeadProcessorTest {
+3 //Seconds Minutes Hours Day_of_month Month Day_of_week
+optional_year
+4 public static String CRON_EXP = '0 0 0 2 6 ? 2022';
+5
+6 static testmethod void testScheduledJob(){
+7 List<Lead> leads = new List<Lead>();
+8
+9 for(Integer i = 0; i < 200; i++){
+10 Lead lead = new Lead(LastName = 'Test ' + i,
+LeadSource = '', Company = 'Test Company ' + i, Status = 'Open -
+11 leads.add(lead);
+12 }
+13
+14 insert leads;
+15
+16 Test.startTest();
+17 // Schedule the test job
+18 String jobId = System.schedule('Update LeadSource to
+19
+20 // Stopping the test will run the job synchronously
+21 Test.stopTest();
+22 }
+23
+24 }
